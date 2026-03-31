@@ -1,0 +1,213 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================
+// Hospitals
+// ============================
+model Hospital {
+  id        Int       @id @default(autoincrement())
+  name      String
+  address   String
+  doctors   Doctor[]
+  patients  Patient[]
+  users     User[]    // Admins / staff
+}
+
+// ============================
+// Users (Hospital Admins / Doctors)
+// ============================
+model User {
+  id              Int       @id @default(autoincrement())
+  name            String
+  email           String   @unique
+  phone           String
+  hashedPassword  String
+  role            String   // 'hospital_admin' | 'doctor'
+  hospital        Hospital @relation(fields: [hospitalId], references: [id])
+  hospitalId      Int
+  doctorProfile   Doctor?  @relation("DoctorUserProfile", fields: [doctorProfileId], references: [id])
+  doctorProfileId Int?     @unique
+
+  // ✅ new opposite relation for patients registered by this admin
+  registeredPatients Patient[] @relation("PatientRegisteredBy")
+}
+
+// ============================
+// Doctors
+// ============================
+model Doctor {
+  id             Int             @id @default(autoincrement())
+  name           String
+  email          String          @unique
+  phone          String
+  hospital       Hospital        @relation(fields: [hospitalId], references: [id])
+  hospitalId     Int
+  user           User?           @relation("DoctorUserProfile")
+  appointments   Appointment[]
+  messages       Message[]       @relation("DoctorMessages")
+  videoSessions  VideoSession[]
+  aiQueries      AIQuery[]       @relation("DoctorAIQueries")
+  patientAccess  PatientAccess[]
+}
+
+// ============================
+// Patients
+// ============================
+model Patient {
+  id                Int       @id @default(autoincrement())
+  nationalId        String    @unique
+  ethioChartId      String    @unique
+  email             String
+  phone             String
+  hashedPassword    String
+  hospital          Hospital  @relation(fields: [hospitalId], references: [id])
+  hospitalId        Int
+
+  // ✅ link to admin
+  registeredBy      User?     @relation("PatientRegisteredBy", fields: [registeredById], references: [id])
+  registeredById    Int?
+
+  teleBirrPaymentId String?   // optional Telebirr payment
+  isVerified        Boolean   @default(false)
+
+  appointments      Appointment[]
+  bills             Billing[]
+  messages          Message[]
+  videoSessions     VideoSession[]
+  medicalConditions MedicalCondition[]
+  patientAccess     PatientAccess[]
+  aiQueries         AIQuery[] @relation("PatientAIQueries")
+}
+
+// ============================
+// Appointments
+// ============================
+model Appointment {
+  id            Int       @id @default(autoincrement())
+  patient       Patient   @relation(fields: [patientId], references: [id])
+  patientId     Int
+  doctor        Doctor    @relation(fields: [doctorId], references: [id])
+  doctorId      Int
+  scheduledAt   DateTime
+  status        String
+  notes         String?
+  prescriptions Prescription[]
+  labResults    LabResult[]
+}
+
+// ============================
+// Lab Results
+// ============================
+model LabResult {
+  id            Int         @id @default(autoincrement())
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
+  appointmentId Int
+  type          String
+  result        String      // JSON or link to PDF
+  recordedAt    DateTime    @default(now())
+}
+
+// ============================
+// Prescriptions
+// ============================
+model Prescription {
+  id            Int         @id @default(autoincrement())
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
+  appointmentId Int
+  medication    String
+  dosage        String
+  duration      String
+}
+
+// ============================
+// Medical Conditions / Allergies
+// ============================
+model MedicalCondition {
+  id          Int       @id @default(autoincrement())
+  patient     Patient   @relation(fields: [patientId], references: [id])
+  patientId   Int
+  condition   String
+  severity    String?
+  notes       String?
+  diagnosedAt DateTime?
+}
+
+// ============================
+// Billing
+// ============================
+model Billing {
+  id          Int       @id @default(autoincrement())
+  patient     Patient   @relation(fields: [patientId], references: [id])
+  patientId   Int
+  amount      Float
+  status      String    // pending, paid
+  createdAt   DateTime  @default(now())
+  paidAt      DateTime?
+  description String?
+}
+
+// ============================
+// Messages / Chat
+// ============================
+model Message {
+  id         Int       @id @default(autoincrement())
+  senderId   Int
+  receiverId Int
+  senderType String    // 'doctor' | 'patient'
+  content    String
+  createdAt  DateTime  @default(now())
+  patient    Patient?  @relation(fields: [patientId], references: [id])
+  patientId  Int?
+  doctor     Doctor?   @relation("DoctorMessages", fields: [doctorId], references: [id])
+  doctorId   Int?
+}
+
+// ============================
+// Video Sessions
+// ============================
+model VideoSession {
+  id           Int       @id @default(autoincrement())
+  patient      Patient   @relation(fields: [patientId], references: [id])
+  patientId    Int
+  doctor       Doctor    @relation(fields: [doctorId], references: [id])
+  doctorId     Int
+  scheduledAt  DateTime
+  sessionToken String
+  status       String    // scheduled, completed, cancelled
+}
+
+// ============================
+// AI Queries
+// ============================
+model AIQuery {
+  id         Int       @id @default(autoincrement())
+  doctor     Doctor    @relation("DoctorAIQueries", fields: [doctorId], references: [id])
+  doctorId   Int
+  patient    Patient   @relation("PatientAIQueries", fields: [patientId], references: [id])
+  patientId  Int
+  query      String
+  response   String
+  createdAt  DateTime  @default(now())
+}
+
+// ============================
+// Patient Access (Cross-Hospital)
+// ============================
+model PatientAccess {
+  id         Int       @id @default(autoincrement())
+  patient    Patient   @relation(fields: [patientId], references: [id])
+  patientId  Int
+  doctor     Doctor    @relation(fields: [doctorId], references: [id])
+  doctorId   Int
+  grantedAt  DateTime  @default(now())
+  revokedAt  DateTime?
+}
