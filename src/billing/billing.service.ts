@@ -39,6 +39,17 @@ export class BillingService {
     });
   }
 
+  async findAll() {
+    return this.prisma.billing.findMany({
+      include: {
+        patient: {
+          select: { id: true, ethioChartId: true, email: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   async findByPatient(patientId: number) {
     const patient = await this.prisma.patient.findUnique({
       where: { id: patientId },

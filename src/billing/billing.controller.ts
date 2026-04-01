@@ -27,6 +27,9 @@ export class BillingController {
 
   @Get(':patientId')
   async findByPatient(@Param('patientId', ParseIntPipe) patientId: number) {
+    if (patientId === 0) {
+      return this.billingService.findAll();
+    }
     return this.billingService.findByPatient(patientId);
   }
 

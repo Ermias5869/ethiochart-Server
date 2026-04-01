@@ -82,12 +82,8 @@ export class AppointmentsService {
         doctor: {
           select: { id: true, name: true, email: true },
         },
-        _count: {
-          select: {
-            prescriptions: true,
-            labResults: true,
-          },
-        },
+        prescriptions: true,
+        labResults: true,
       },
       orderBy: { scheduledAt: 'desc' },
     });
