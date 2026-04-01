@@ -130,13 +130,15 @@ export class AuthService {
 
     return {
       accessToken: this.jwtService.sign(payload),
-      patient: {
+      user: {
         id: patient.id,
-        ethioChartId: patient.ethioChartId,
+        name: patient.email.split('@')[0],
         email: patient.email,
-        phone: patient.phone,
+        role: 'patient' as const,
         hospitalId: patient.hospitalId,
         hospitalName: patient.hospital.name,
+        patientProfileId: patient.id,
+        ethioChartId: patient.ethioChartId,
         isVerified: patient.isVerified,
       },
     };
