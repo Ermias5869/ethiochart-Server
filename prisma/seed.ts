@@ -258,6 +258,8 @@ async function main() {
 
     const patient = await prisma.patient.create({
       data: {
+        fullName: name,
+        dateOfBirth: faker.date.birthdate({ min: 18, max: 75, mode: 'age' }),
         nationalId: genNationalId(),
         ethioChartId: genEthioChartId(),
         email: `${emailBase}${i}@gmail.com`,
@@ -266,6 +268,7 @@ async function main() {
         hospitalId: hospital.id,
         registeredById: pick(admins).id,
         isVerified: Math.random() > 0.15,
+        registryStatus: Math.random() > 0.15 ? 'valid' : 'pending',
         teleBirrPaymentId: Math.random() > 0.4 ? `TB-${faker.string.alphanumeric(10).toUpperCase()}` : null,
       },
     });

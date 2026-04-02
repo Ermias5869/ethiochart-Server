@@ -1,15 +1,26 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsInt, IsString, IsOptional, IsEnum } from 'class-validator';
 
 export class CreateAiQueryDto {
-  @IsNumber()
-  @IsNotEmpty()
+  @IsInt()
   doctorId: number;
 
-  @IsNumber()
-  @IsNotEmpty()
+  @IsOptional()
+  @IsInt()
+  patientId?: number;
+
+  @IsString()
+  query: string;
+}
+
+export class PatientAiQueryDto {
+  @IsInt()
   patientId: number;
 
   @IsString()
-  @IsNotEmpty()
-  query: string;
+  question: string;
+}
+
+export class GeneralAiQueryDto {
+  @IsString()
+  question: string;
 }

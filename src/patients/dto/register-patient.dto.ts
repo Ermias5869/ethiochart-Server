@@ -36,4 +36,12 @@ export class RegisterPatientDto {
   @IsNumber()
   @IsNotEmpty()
   hospitalId: number;
+
+  @IsString()
+  @IsOptional()
+  fullName?: string;
+
+  @IsString()
+  @IsOptional()
+  dateOfBirth?: string;
 }

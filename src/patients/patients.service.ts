@@ -88,17 +88,34 @@ export class PatientsService {
     const hashedPassword = await bcrypt.hash(dto.password, salt);
 
     // Step 6 & 7: Create patient with hospital and admin links
+    // Validate hospitalId exists (may be stale after re-seed)
+    let validHospitalId = dto.hospitalId;
+    const hospitalExists = await this.prisma.hospital.findUnique({
+      where: { id: validHospitalId },
+    });
+    if (!hospitalExists) {
+      const firstHospital = await this.prisma.hospital.findFirst();
+      if (!firstHospital) {
+        throw new BadRequestException('No hospitals exist in the system');
+      }
+      this.logger.warn(`Hospital ID ${validHospitalId} not found, defaulting to ${firstHospital.id}`);
+      validHospitalId = firstHospital.id;
+    }
+
     const patient = await this.prisma.patient.create({
       data: {
+        fullName: dto.fullName || '',
+        dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : null,
         nationalId: dto.nationalId,
         ethioChartId,
         email: dto.email,
         phone: dto.phone,
         hashedPassword,
-        hospitalId: dto.hospitalId,
+        hospitalId: validHospitalId,
         registeredById: adminId,
         teleBirrPaymentId,
         isVerified: true,
+        registryStatus: idVerification.verified ? 'valid' : 'pending',
       },
       include: {
         hospital: {

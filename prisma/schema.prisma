@@ -63,6 +63,8 @@ model Doctor {
 // ============================
 model Patient {
   id                Int       @id @default(autoincrement())
+  fullName          String    @default("")
+  dateOfBirth       DateTime?
   nationalId        String    @unique
   ethioChartId      String    @unique
   email             String
@@ -77,6 +79,7 @@ model Patient {
 
   teleBirrPaymentId String?   // optional Telebirr payment
   isVerified        Boolean   @default(false)
+  registryStatus    String    @default("pending") // pending, valid, rejected
 
   appointments      Appointment[]
   bills             Billing[]
