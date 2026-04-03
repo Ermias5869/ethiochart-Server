@@ -166,6 +166,8 @@ model Message {
   receiverId Int
   senderType String    // 'doctor' | 'patient'
   content    String
+  isRead     Boolean   @default(false)
+  readAt     DateTime?
   createdAt  DateTime  @default(now())
   patient    Patient?  @relation(fields: [patientId], references: [id])
   patientId  Int?
@@ -184,7 +186,10 @@ model VideoSession {
   doctorId     Int
   scheduledAt  DateTime
   sessionToken String
-  status       String    // scheduled, completed, cancelled
+  status       String    // scheduled, active, ended, cancelled
+  startedAt    DateTime?
+  endedAt      DateTime?
+  roomId       String?
 }
 
 // ============================

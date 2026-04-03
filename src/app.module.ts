@@ -20,6 +20,7 @@ import { MessagesModule } from './messages/messages.module';
 import { VideoSessionsModule } from './video-sessions/video-sessions.module';
 import { AiQueryModule } from './ai-query/ai-query.module';
 import { PatientAccessModule } from './patient-access/patient-access.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { PatientAccessModule } from './patient-access/patient-access.module';
     VideoSessionsModule,
     AiQueryModule,
     PatientAccessModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],

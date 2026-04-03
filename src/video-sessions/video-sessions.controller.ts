@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Body,
   Param,
   ParseIntPipe,
@@ -24,8 +25,26 @@ export class VideoSessionsController {
     return this.videoSessionsService.create(dto);
   }
 
-  @Get(':patientId')
+  @Get()
+  async findAll() {
+    return this.videoSessionsService.findAll();
+  }
+
+  @Get('patient/:patientId')
   async findByPatient(@Param('patientId', ParseIntPipe) patientId: number) {
     return this.videoSessionsService.findByPatient(patientId);
+  }
+
+  @Get('doctor/:doctorId')
+  async findByDoctor(@Param('doctorId', ParseIntPipe) doctorId: number) {
+    return this.videoSessionsService.findByDoctor(doctorId);
+  }
+
+  @Patch(':id/status')
+  async updateStatus(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('status') status: string,
+  ) {
+    return this.videoSessionsService.updateStatus(id, status);
   }
 }

@@ -57,13 +57,61 @@ export class VideoSessionsService {
       where: { patientId },
       include: {
         patient: {
-          select: { id: true, ethioChartId: true, email: true },
+          select: { id: true, ethioChartId: true, email: true, fullName: true },
         },
         doctor: {
           select: { id: true, name: true, email: true },
         },
       },
       orderBy: { scheduledAt: 'desc' },
+    });
+  }
+
+  async findByDoctor(doctorId: number) {
+    return this.prisma.videoSession.findMany({
+      where: { doctorId },
+      include: {
+        patient: {
+          select: { id: true, ethioChartId: true, email: true, fullName: true },
+        },
+        doctor: {
+          select: { id: true, name: true, email: true },
+        },
+      },
+      orderBy: { scheduledAt: 'desc' },
+    });
+  }
+
+  async findAll() {
+    return this.prisma.videoSession.findMany({
+      include: {
+        patient: {
+          select: { id: true, ethioChartId: true, email: true, fullName: true },
+        },
+        doctor: {
+          select: { id: true, name: true, email: true },
+        },
+      },
+      orderBy: { scheduledAt: 'desc' },
+    });
+  }
+
+  async updateStatus(id: number, status: string) {
+    const data: any = { status };
+    if (status === 'active') data.startedAt = new Date();
+    if (status === 'ended') data.endedAt = new Date();
+
+    return this.prisma.videoSession.update({
+      where: { id },
+      data,
+      include: {
+        patient: {
+          select: { id: true, ethioChartId: true, email: true, fullName: true },
+        },
+        doctor: {
+          select: { id: true, name: true, email: true },
+        },
+      },
     });
   }
 }
